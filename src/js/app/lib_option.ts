@@ -161,7 +161,10 @@ class LibOption {
    */
   paramExists(paramName: string): boolean {
     const camelParamName = camelcase(paramName);
-    return (this.optionsInstance && this.optionsInstance.hasOwnProperty(camelParamName));
+    return (
+      this.optionsInstance !== null &&
+      Object.prototype.hasOwnProperty.call(this.optionsInstance, camelParamName)
+    );
   }
 
   /**
@@ -195,7 +198,7 @@ class LibOption {
    * @return {*}
    */
   getGestureActionName(command: string): null|string {
-    if (this.gestureHash && this.gestureHash.hasOwnProperty(command)) {
+    if (this.gestureHash && Object.prototype.hasOwnProperty.call(this.gestureHash, command)) {
       return this.gestureHash[command];
     }
 

@@ -91,6 +91,16 @@ describe('LibOption - parameters, gestures, and reset', () => {
     expect(libOption.isGestureAlreadyExist('DR')).toBe('gesture_close_tab');
   });
 
+  it("should safely handle prototype properties in paramExists and getGestureActionName", () => {
+    libOption.setRawStorageData(null);
+
+    expect(libOption.paramExists("toString")).toBe(false);
+    expect(libOption.paramExists("constructor")).toBe(false);
+    expect(libOption.getGestureActionName("toString")).toBeNull();
+    expect(libOption.getGestureActionName("valueOf")).toBeNull();
+    expect(libOption.getGestureActionName("__proto__")).toBeNull();
+  });
+
   it('should set, get params, save and reset options', async () => {
     libOption.setRawStorageData(null);
     libOption.setParam('line_width', 10);
