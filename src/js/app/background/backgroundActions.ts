@@ -80,7 +80,7 @@ export const backgroundActions = (
   actionName: string,
   href: null | string = null,
 ): boolean => {
-  if (!gestureFunction.hasOwnProperty(actionName)) {
+  if (!Object.prototype.hasOwnProperty.call(gestureFunction, actionName)) {
     return false;
   }
   if (typeof gestureFunction[actionName] !== 'function') {
