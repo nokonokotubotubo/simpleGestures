@@ -53,6 +53,9 @@ describe('Mouse - getHref', () => {
 
     const parentEvent = createMockEvent('', 'https://example.com/parent');
     expect(Mouse.getHref(parentEvent)).toBe('https://example.com/parent');
+
+    const relativeEvent = createMockEvent('/relative/path');
+    expect(Mouse.getHref(relativeEvent)).toBe('http://localhost/relative/path');
   });
 
   it('rejects unsafe URLs (javascript, data, file) and empty href', () => {

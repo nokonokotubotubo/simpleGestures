@@ -57,9 +57,13 @@ class Mouse {
     }
 
     try {
-      const parsedUrl = new URL(rawHref);
+      const baseUrl =
+        typeof window !== 'undefined' && window.location
+          ? window.location.href
+          : undefined;
+      const parsedUrl = new URL(rawHref, baseUrl);
       if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-        return rawHref;
+        return parsedUrl.href;
       }
     } catch {
       // Invalid URL
