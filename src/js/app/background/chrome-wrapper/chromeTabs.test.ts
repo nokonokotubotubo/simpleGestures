@@ -120,3 +120,29 @@ describe('chromeTabs - create and reload operations', () => {
     expect(chrome.tabs.reload).toHaveBeenCalledWith(5, { bypassCache: true });
   });
 });
+
+describe('chromeTabs - safe URL validation', () => {
+  beforeEach(setupChromeTabsMock);
+
+  it('should set url to null when creating tab with unsafe URI schemes', async () => {
+    const activeTab = { id: 5, index: 2 } as chrome.tabs.Tab;
+    (chrome.tabs.query as jest.Mock).mockImplementation(
+      (queryInfo, callback) => callback([activeTab]),
+    );
+
+    await chromeTabs.createActiveRight('javascript:alert(1)', true);
+    expect(chrome.tabs.create).toHaveBeenCalledWith({
+      active: true,
+      index: 3,
+      openerTabId: 5,
+      url: null,
+    });
+
+    await chromeTabs.createLast('javascript:alert(1)', true);
+    expect(chrome.tabs.create).toHaveBeenCalledWith({
+      active: true,
+      openerTabId: 5,
+      url: null,
+    });
+  });
+});

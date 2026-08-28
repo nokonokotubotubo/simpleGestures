@@ -1,5 +1,27 @@
 import Tab = chrome.tabs.Tab;
 
+/**
+ * Validates tab creation URLs against safe protocols
+ * (http:, https:, chrome:, chrome-extension:) to prevent executing
+ * unsafe URI schemes like javascript:, data:, or file:.
+ */
+const isSafeTabUrl = (url: null | string): boolean => {
+  if (!url) {
+    return false;
+  }
+  try {
+    const parsedUrl = new URL(url, 'chrome-extension://dummy/');
+    return (
+      parsedUrl.protocol === 'http:' ||
+      parsedUrl.protocol === 'https:' ||
+      parsedUrl.protocol === 'chrome:' ||
+      parsedUrl.protocol === 'chrome-extension:'
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const chromeTabs = {
   activate(tab: Tab): void {
     chrome.tabs.update(tab.id, {active: true});
@@ -24,21 +46,23 @@ export const chromeTabs = {
   async createActiveRight(url: null | string = null, active = true) {
     const activeTab: Tab = await chromeTabs.getActiveTab();
     const indexOfAppendingTab: number = activeTab.index + 1;
+    const targetUrl: string | null = isSafeTabUrl(url) ? url : null;
 
     await chrome.tabs.create({
       active: active,
       index: indexOfAppendingTab,
       openerTabId: activeTab.id,
-      url: url,
+      url: targetUrl,
     });
   },
   async createLast(url: null | string = null, active = true) {
     const activeTab: Tab = await chromeTabs.getActiveTab();
+    const targetUrl: string | null = isSafeTabUrl(url) ? url : null;
 
     await chrome.tabs.create({
       active: active,
       openerTabId: activeTab.id,
-      url: url,
+      url: targetUrl,
     });
   },
   async duplicate() {
