@@ -39,6 +39,18 @@ describe('LibOption - loading and options management', () => {
     expect(libOption.getColorCode()).toBe('#FF0000');
   });
 
+  it('should handle empty string or invalid JSON without crashing', () => {
+    libOption.setRawStorageData('');
+    expect(libOption.getRawStorageData()).toBe('');
+    expect(libOption.getEnabled()).toBe(true);
+    expect(libOption.getColorCode()).toBe('#FF0000');
+
+    libOption.setRawStorageData('invalid json');
+    expect(libOption.getRawStorageData()).toBe('invalid json');
+    expect(libOption.getEnabled()).toBe(true);
+    expect(libOption.getColorCode()).toBe('#FF0000');
+  });
+
   it('should load storage data', async () => {
     const raw = JSON.stringify({ language: 'English', line_width: 5 });
     localStorageMock['options'] = raw;
