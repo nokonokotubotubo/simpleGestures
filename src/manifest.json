@@ -17,6 +17,9 @@
     "sessions",
     "storage"
   ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'"
+  },
   "background": {
     "service_worker": "background.js"
   },
