@@ -120,10 +120,14 @@ class LibOption {
   setRawStorageData(rawStorageData: string|null) {
     this.storageData = rawStorageData;
 
-    if (!this.storageData) {
+    if (!this.storageData || !this.storageData.trim()) {
       this.optionsInstance = new Option({});
     } else {
-      this.optionsInstance = new Option(JSON.parse(this.storageData));
+      try {
+        this.optionsInstance = new Option(JSON.parse(this.storageData));
+      } catch {
+        this.optionsInstance = new Option({});
+      }
     }
 
     this.gestureHash = {};
