@@ -1,4 +1,50 @@
+const createTrustedMouseEvent = (
+  type: string,
+  eventInitDict?: MouseEventInit,
+): MouseEvent => {
+  const event = new MouseEvent(type, eventInitDict);
+  const symbols = Object.getOwnPropertySymbols(event);
+  if (symbols.length > 0) {
+    const impl = (event as unknown as Record<symbol, unknown>)[symbols[0]];
+    if (impl) {
+      Object.defineProperty(impl, 'isTrusted', {
+        get() {
+          return true;
+        },
+        set() {},
+      });
+    }
+  }
+  return event;
+};
+
+type EventListenerItem = {
+  listener: EventListenerOrEventListenerObject;
+  options?: boolean | AddEventListenerOptions;
+  type: string;
+};
+
+const docListeners: EventListenerItem[] = [];
+const originalAddEventListener = document.addEventListener.bind(document);
+
+document.addEventListener = (
+  type: string,
+  listener: EventListenerOrEventListenerObject,
+  options?: boolean | AddEventListenerOptions,
+) => {
+  docListeners.push({ listener, options, type });
+  originalAddEventListener(type, listener, options);
+};
+
+const cleanupDocListeners = (): void => {
+  for (const { listener, options, type } of docListeners) {
+    document.removeEventListener(type, listener, options);
+  }
+  docListeners.length = 0;
+};
+
 const setupHandlerMock = async (): Promise<void> => {
+  cleanupDocListeners();
   jest.resetModules();
   document.body.innerHTML =
     '<div><a id="testLink" href="https://example.com/test"><span>Click</span></a></div>';
@@ -14,11 +60,6 @@ const setupHandlerMock = async (): Promise<void> => {
     stroke: jest.fn(),
     strokeStyle: '',
   } as unknown as CanvasRenderingContext2D);
-
-  Object.defineProperty(Event.prototype, 'isTrusted', {
-    configurable: true,
-    get: () => true,
-  });
 
   globalThis.chrome = {
     runtime: {
@@ -46,6 +87,7 @@ describe('handler.ts - keyboard events', () => {
   beforeEach(setupHandlerMock);
 
   afterEach(() => {
+    cleanupDocListeners();
     jest.restoreAllMocks();
   });
 
@@ -71,13 +113,14 @@ describe('handler.ts - mouse events', () => {
   beforeEach(setupHandlerMock);
 
   afterEach(() => {
+    cleanupDocListeners();
     jest.restoreAllMocks();
   });
 
   it('should handle mousedown, mousemove, mouseup, contextmenu sequence', async () => {
     const link = document.getElementById('testLink')!;
 
-    const mousedown = new MouseEvent('mousedown', {
+    const mousedown = createTrustedMouseEvent('mousedown', {
       bubbles: true,
       button: 2,
       buttons: 2,
@@ -89,7 +132,7 @@ describe('handler.ts - mouse events', () => {
     Object.defineProperty(mousedown, 'target', { value: link });
     document.dispatchEvent(mousedown);
 
-    const mousemove = new MouseEvent('mousemove', {
+    const mousemove = createTrustedMouseEvent('mousemove', {
       bubbles: true,
       button: 2,
       buttons: 2,
@@ -100,17 +143,96 @@ describe('handler.ts - mouse events', () => {
     Object.defineProperty(mousemove, 'pageY', { value: 100 });
     document.dispatchEvent(mousemove);
 
-    const mouseup = new MouseEvent('mouseup', {
+    const mouseup = createTrustedMouseEvent('mouseup', {
       bubbles: true,
       button: 2,
       buttons: 0,
     });
     document.dispatchEvent(mouseup);
 
-    const contextmenu = new MouseEvent('contextmenu', {
+    const contextmenu = createTrustedMouseEvent('contextmenu', {
       bubbles: true,
       cancelable: true,
     });
     document.dispatchEvent(contextmenu);
+  });
+});
+
+const LINUX_UA = [
+  'Mozilla/5.0 (X11; Linux x86_64)',
+  'AppleWebKit/537.36 (KHTML, like Gecko)',
+  'Chrome/120.0.0.0 Safari/537.36',
+].join(' ');
+
+const WINDOWS_UA = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+  'AppleWebKit/537.36 (KHTML, like Gecko)',
+  'Chrome/120.0.0.0 Safari/537.36',
+].join(' ');
+
+const MAC_UA = [
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+  'AppleWebKit/537.36 (KHTML, like Gecko)',
+  'Chrome/120.0.0.0 Safari/537.36',
+].join(' ');
+
+let mockTime = 10000;
+const setupHandlerWithUserAgent = async (userAgent: string): Promise<void> => {
+  mockTime += 2000;
+  jest.spyOn(Date, 'now').mockReturnValue(mockTime);
+  Object.defineProperty(window.navigator, 'userAgent', {
+    configurable: true,
+    get: () => userAgent,
+  });
+  await setupHandlerMock();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+};
+
+describe('handler.ts - OS specific contextmenu handling', () => {
+  afterEach(() => {
+    cleanupDocListeners();
+    jest.restoreAllMocks();
+  });
+
+  it('should allow contextmenu on single click in Linux environment', async () => {
+    await setupHandlerWithUserAgent(LINUX_UA);
+
+    const contextmenu = createTrustedMouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(contextmenu);
+
+    expect(contextmenu.defaultPrevented).toBe(false);
+  });
+
+  it('should allow contextmenu on single click in Windows environment', async () => {
+    await setupHandlerWithUserAgent(WINDOWS_UA);
+
+    const contextmenu = createTrustedMouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(contextmenu);
+
+    expect(contextmenu.defaultPrevented).toBe(false);
+  });
+
+  it('should handle double click contextmenu in macOS environment', async () => {
+    await setupHandlerWithUserAgent(MAC_UA);
+
+    const firstContextmenu = createTrustedMouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(firstContextmenu);
+    expect(firstContextmenu.defaultPrevented).toBe(true);
+
+    const secondContextmenu = createTrustedMouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(secondContextmenu);
+    expect(secondContextmenu.defaultPrevented).toBe(false);
   });
 });
