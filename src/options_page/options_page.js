@@ -29,7 +29,7 @@ const canvasForOption = new TrailCanvas('gestureOptionCanvas', '10002');
     // type: テキスト & color
     option.OPTION_ID_LIST.forEach((idName) => {
       $('#' + idName).on('change', (event) => {
-        if (!event.originalEvent?.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return;
         }
         option.setParam(idName, $(event.currentTarget).val());
@@ -41,7 +41,7 @@ const canvasForOption = new TrailCanvas('gestureOptionCanvas', '10002');
     const checkIds = ['enabled', 'command_text_on', 'action_text_on', 'trail_on'];
     checkIds.forEach((idName) => {
       $('#' + idName).on('change', (event) => {
-        if (!event.originalEvent?.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return;
         }
         option.setParam(idName, $(event.currentTarget).prop('checked'));
@@ -53,7 +53,7 @@ const canvasForOption = new TrailCanvas('gestureOptionCanvas', '10002');
     const radioIds = ['language'];
     radioIds.forEach((idName) => {
       $('[name=' + idName + ']').on('change', (event) => {
-        if (!event.originalEvent?.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return;
         }
         option.setParam(idName, $(event.currentTarget).attr('value'));
@@ -149,7 +149,7 @@ const reflectOptionSettingsOnScreen = () => {
  */
 const initializeAndRegisterEventForTab = () => {
   $('.changeTab').on('click', (event) => {
-    if (!event.originalEvent?.isTrusted) {
+    if (event.originalEvent && !event.originalEvent.isTrusted) {
       return;
     }
     const $clickedTab = $(event.currentTarget);
@@ -246,7 +246,7 @@ const createGestureInputComponent = ($input) => {
   $canvas.off();
   $canvas
       .on('mousedown', (event) => {
-        if (!event.originalEvent.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return false;
         }
         const tmpX = event.pageX - $canvas.offset().left;
@@ -255,7 +255,7 @@ const createGestureInputComponent = ($input) => {
         return false;
       })
       .on('mousemove', (event) => {
-        if (!event.originalEvent.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return false;
         }
         if (event.buttons === 0) {
@@ -278,7 +278,7 @@ const createGestureInputComponent = ($input) => {
         return false;
       })
       .on('mouseup', (event) => {
-        if (!event.originalEvent.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return false;
         }
         const removeCanvas = document.getElementById(drawCanvas.id);
@@ -302,7 +302,7 @@ const setGestureInputComponent = ($input, gestureText) => {
 // eslint-disable-next-line
 const registerEventForGesture = () => {
   $('.reset_gesture').on('click', (event) => {
-    if (!event.originalEvent?.isTrusted) {
+    if (event.originalEvent && !event.originalEvent.isTrusted) {
       return;
     }
     const name = $(event.currentTarget).data('target');
@@ -310,10 +310,12 @@ const registerEventForGesture = () => {
   });
 
   $('.views-gesture').on('click', (event) => {
-    if (!event.originalEvent?.isTrusted) {
+    if (event.originalEvent && !event.originalEvent.isTrusted) {
       return;
     }
-    $(event.currentTarget).siblings('.input_gesture').show().focus().trigger('click');
+    const $input = $(event.currentTarget).siblings('.input_gesture');
+    $input.show().focus();
+    createGestureInputComponent($input);
   });
 
   $('.input_gesture')
@@ -328,7 +330,7 @@ const registerEventForGesture = () => {
         $input.hide();
       })
       .on('change', (event) => {
-        if (!event.originalEvent?.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return;
         }
         const $input = $(event.target);
@@ -359,7 +361,7 @@ const registerEventForGesture = () => {
         saveOptions();
       })
       .on('click', (event) => {
-        if (!event.originalEvent?.isTrusted) {
+        if (event.originalEvent && !event.originalEvent.isTrusted) {
           return;
         }
         createGestureInputComponent($(event.target));
@@ -368,7 +370,7 @@ const registerEventForGesture = () => {
 
 const registerEventForAllReset = () => {
   $('#reset_all').on('click', async (event) => {
-    if (!event.originalEvent?.isTrusted) {
+    if (event.originalEvent && !event.originalEvent.isTrusted) {
       return;
     }
     const confirmOk = window.confirm(lang.confirmOptionReset[option.getLanguage()]);
