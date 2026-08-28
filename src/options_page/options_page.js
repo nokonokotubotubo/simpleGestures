@@ -29,6 +29,9 @@ const canvasForOption = new TrailCanvas('gestureOptionCanvas', '10002');
     // type: テキスト & color
     option.OPTION_ID_LIST.forEach((idName) => {
       $('#' + idName).on('change', (event) => {
+        if (!event.originalEvent?.isTrusted) {
+          return;
+        }
         option.setParam(idName, $(event.currentTarget).val());
         saveOptions();
       });
@@ -38,6 +41,9 @@ const canvasForOption = new TrailCanvas('gestureOptionCanvas', '10002');
     const checkIds = ['enabled', 'command_text_on', 'action_text_on', 'trail_on'];
     checkIds.forEach((idName) => {
       $('#' + idName).on('change', (event) => {
+        if (!event.originalEvent?.isTrusted) {
+          return;
+        }
         option.setParam(idName, $(event.currentTarget).prop('checked'));
         saveOptions();
       });
@@ -47,6 +53,9 @@ const canvasForOption = new TrailCanvas('gestureOptionCanvas', '10002');
     const radioIds = ['language'];
     radioIds.forEach((idName) => {
       $('[name=' + idName + ']').on('change', (event) => {
+        if (!event.originalEvent?.isTrusted) {
+          return;
+        }
         option.setParam(idName, $(event.currentTarget).attr('value'));
         saveOptions();
         reflectSelectedLanguageToScreen();
@@ -140,6 +149,9 @@ const reflectOptionSettingsOnScreen = () => {
  */
 const initializeAndRegisterEventForTab = () => {
   $('.changeTab').on('click', (event) => {
+    if (!event.originalEvent?.isTrusted) {
+      return;
+    }
     const $clickedTab = $(event.currentTarget);
     reflectActiveTabToScreen($clickedTab);
   });
@@ -290,11 +302,17 @@ const setGestureInputComponent = ($input, gestureText) => {
 // eslint-disable-next-line
 const registerEventForGesture = () => {
   $('.reset_gesture').on('click', (event) => {
+    if (!event.originalEvent?.isTrusted) {
+      return;
+    }
     const name = $(event.currentTarget).data('target');
     $('#' + name).val('').triggerHandler('change');
   });
 
   $('.views-gesture').on('click', (event) => {
+    if (!event.originalEvent?.isTrusted) {
+      return;
+    }
     $(event.currentTarget).siblings('.input_gesture').show().focus().trigger('click');
   });
 
@@ -310,6 +328,9 @@ const registerEventForGesture = () => {
         $input.hide();
       })
       .on('change', (event) => {
+        if (!event.originalEvent?.isTrusted) {
+          return;
+        }
         const $input = $(event.target);
         const inputGestureForm = $input.val();
         const targetActionName = $input.attr('id');
@@ -338,12 +359,18 @@ const registerEventForGesture = () => {
         saveOptions();
       })
       .on('click', (event) => {
+        if (!event.originalEvent?.isTrusted) {
+          return;
+        }
         createGestureInputComponent($(event.target));
       });
 };
 
 const registerEventForAllReset = () => {
-  $('#reset_all').on('click', async () => {
+  $('#reset_all').on('click', async (event) => {
+    if (!event.originalEvent?.isTrusted) {
+      return;
+    }
     const confirmOk = window.confirm(lang.confirmOptionReset[option.getLanguage()]);
     if (confirmOk) {
       await option.reset();
