@@ -39,6 +39,8 @@ describe('backgroundActions', () => {
   it('should return false for unknown or invalid action names', () => {
     expect(backgroundActions('invalid_action')).toBe(false);
     expect(backgroundActions('toString')).toBe(false);
+    expect(backgroundActions(123 as unknown as string)).toBe(false);
+    expect(backgroundActions(null as unknown as string)).toBe(false);
   });
 });
 
@@ -54,6 +56,7 @@ describe('URL Validation and Sanitization', () => {
     expect(isSafeUrl('chrome://extensions')).toBe(false);
     expect(isSafeUrl(null)).toBe(false);
     expect(isSafeUrl('')).toBe(false);
+    expect(isSafeUrl(123 as unknown as string)).toBe(false);
   });
 
   it('should sanitize unsafe href parameters when calling backgroundActions', async () => {
