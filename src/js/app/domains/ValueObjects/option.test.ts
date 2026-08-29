@@ -38,4 +38,18 @@ describe('Option', () => {
     expect(serialized).toHaveProperty('enabled', false);
     expect(opt.toJson()).toBe(JSON.stringify(serialized));
   });
+
+  it('should fallback to default values for invalid color_code or line_width', () => {
+    const invalidInputs = {
+      color_code: 'invalid_color',
+      line_width: -5,
+    };
+    const opt = new Option(invalidInputs);
+    expect(opt.colorCode).toBe('#FF0000');
+    expect(opt.lineWidth).toBe(3);
+
+    const validShortHex = new Option({ color_code: '#abc', line_width: '10' });
+    expect(validShortHex.colorCode).toBe('#abc');
+    expect(validShortHex.lineWidth).toBe(10);
+  });
 });

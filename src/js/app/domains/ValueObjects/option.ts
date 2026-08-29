@@ -45,8 +45,18 @@ class Option {
   constructor(value) {
     this.enabled = value.enabled ?? true;
     this.language = value.language ?? 'Japanese';
-    this.colorCode = value.color_code ?? '#FF0000';
-    this.lineWidth = value.line_width ?? 3;
+    const isHexColor =
+      typeof value.color_code === 'string' && /^#([0-9a-fA-F]{3}){1,2}$/.test(value.color_code);
+    this.colorCode = isHexColor ? value.color_code : '#FF0000';
+
+    const parsedLineWidth = typeof value.line_width === 'number'
+      ? value.line_width
+      : typeof value.line_width === 'string'
+        ? parseInt(value.line_width, 10)
+        : NaN;
+    const isValidWidth =
+      Number.isInteger(parsedLineWidth) && parsedLineWidth >= 1 && parsedLineWidth <= 50;
+    this.lineWidth = isValidWidth ? parsedLineWidth : 3;
     this.commandTextOn = value.command_text_on ?? true;
     this.actionTextOn = value.action_text_on ?? true;
     this.trailOn = value.trail_on ?? true;
