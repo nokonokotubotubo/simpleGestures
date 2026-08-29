@@ -29,7 +29,7 @@ import actionWindowNormalize from './Action/window_normalize';
 export const isSafeUrl = (
   url: null | string,
 ): boolean => {
-  if (!url) {
+  if (typeof url !== 'string' || !url) {
     return false;
   }
   try {
@@ -80,7 +80,10 @@ export const backgroundActions = (
   actionName: string,
   href: null | string = null,
 ): boolean => {
-  if (!Object.prototype.hasOwnProperty.call(gestureFunction, actionName)) {
+  if (
+    typeof actionName !== 'string' ||
+    !Object.prototype.hasOwnProperty.call(gestureFunction, actionName)
+  ) {
     return false;
   }
   if (typeof gestureFunction[actionName] !== 'function') {

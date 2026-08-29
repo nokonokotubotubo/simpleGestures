@@ -6,7 +6,7 @@ import Tab = chrome.tabs.Tab;
  * unsafe URI schemes like javascript:, data:, or file:.
  */
 const isSafeTabUrl = (url: null | string): boolean => {
-  if (!url) {
+  if (typeof url !== 'string' || !url) {
     return false;
   }
   try {
@@ -27,12 +27,15 @@ export const chromeTabs = {
     chrome.tabs.update(tab.id, {active: true});
   },
   async activateOrCreate(url: null | string = null) {
-    const extensionTab: null | Tab = await chromeTabs.findSameUrlInCurrentWindow(url);
+    const safeUrl: string | null = isSafeTabUrl(url) ? url : null;
+    const extensionTab: null | Tab = safeUrl
+      ? await chromeTabs.findSameUrlInCurrentWindow(safeUrl)
+      : null;
 
     if (extensionTab) {
       chromeTabs.activate(extensionTab);
     } else {
-      await chromeTabs.createLast(url);
+      await chromeTabs.createLast(safeUrl);
     }
   },
   close(tab: Tab | Tab[]): void {
