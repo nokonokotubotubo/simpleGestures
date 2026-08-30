@@ -71,4 +71,15 @@ describe('Mouse - getHref', () => {
     const emptyEvent = createMockEvent('');
     expect(Mouse.getHref(emptyEvent)).toBeNull();
   });
+
+  it('rejects non-string rawHref values (numbers, booleans, objects)', () => {
+    const numberEvent = createMockEvent(12345 as unknown as string);
+    expect(Mouse.getHref(numberEvent)).toBeNull();
+
+    const booleanEvent = createMockEvent(true as unknown as string);
+    expect(Mouse.getHref(booleanEvent)).toBeNull();
+
+    const objectEvent = createMockEvent({ href: 'test' } as unknown as string);
+    expect(Mouse.getHref(objectEvent)).toBeNull();
+  });
 });

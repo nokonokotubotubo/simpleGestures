@@ -52,7 +52,7 @@ class Mouse {
       rawHref = parentLinkElement.href;
     }
 
-    if (!rawHref) {
+    if (typeof rawHref !== 'string' || !rawHref) {
       return null;
     }
 
