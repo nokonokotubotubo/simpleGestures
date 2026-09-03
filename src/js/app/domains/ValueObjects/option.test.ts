@@ -17,7 +17,7 @@ describe('Option', () => {
   });
 
   it('should override defaults and serialize to JSON', () => {
-    const custom = {
+    const opt = new Option({
       action_text_on: false,
       color_code: '#00FF00',
       command_text_on: false,
@@ -26,9 +26,7 @@ describe('Option', () => {
       language: 'English',
       line_width: 5,
       trail_on: false,
-    };
-
-    const opt = new Option(custom);
+    });
 
     expect(opt.enabled).toBe(false);
     expect(opt.language).toBe('English');
@@ -39,14 +37,21 @@ describe('Option', () => {
     expect(opt.toJson()).toBe(JSON.stringify(serialized));
   });
 
-  it('should fallback to default values for invalid color_code or line_width', () => {
-    const invalidInputs = {
+  it('should fallback to default values for invalid inputs', () => {
+    const opt = new Option({
       color_code: 'invalid_color',
+      enabled: 'not_a_boolean',
+      gesture_close_tab_without_pinned: 'INVALID_COMMAND_123',
+      gesture_new_tab: '<script>alert(1)</script>',
+      language: 'Spanish',
       line_width: -5,
-    };
-    const opt = new Option(invalidInputs);
+    });
     expect(opt.colorCode).toBe('#FF0000');
     expect(opt.lineWidth).toBe(3);
+    expect(opt.enabled).toBe(true);
+    expect(opt.language).toBe('Japanese');
+    expect(opt.gestureNewTab).toBe('D');
+    expect(opt.gestureCloseTabWithoutPinned).toBe('DR');
 
     const validShortHex = new Option({ color_code: '#abc', line_width: '10' });
     expect(validShortHex.colorCode).toBe('#abc');
